@@ -1,0 +1,3 @@
+# yaml-language-server: $schema=router.config.json
+cors:
+  allow_any_origin: true

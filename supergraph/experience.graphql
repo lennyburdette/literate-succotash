@@ -1,0 +1,46 @@
+extend schema
+  @link(
+    url: "https://specs.apollo.dev/federation/v2.3"
+    import: ["@key", "@interfaceObject"]
+  )
+
+type Query {
+  page(url: String!): [PageBlock!]!
+}
+
+union PageBlock = ProductCategoryCollection
+
+type ProductCategoryCollection @key(fields: "categoryId") {
+  categoryId: ID!
+}
+
+type ProductCard @interfaceObject @key(fields: "id") {
+  id: ID!
+  blocks: [ProductCardBlock!]!
+}
+
+union ProductCardBlock =
+    ProductCardTitle
+  | ProductCardDescription
+  | ProductCardImage
+  | ProductCardPrice
+
+type ProductCardTitle {
+  product: Product
+}
+
+type ProductCardDescription {
+  product: Product
+}
+
+type ProductCardImage {
+  product: Product
+}
+
+type ProductCardPrice {
+  product: Product
+}
+
+type Product @key(fields: "id") {
+  id: ID!
+}

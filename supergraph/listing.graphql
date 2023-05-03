@@ -1,0 +1,40 @@
+extend schema
+  @link(url: "https://specs.apollo.dev/federation/v2.3", import: ["@key"])
+
+type ProductCategoryCollection @key(fields: "categoryId") {
+  categoryId: ID!
+  products(first: Int = 10, after: String): ProductCardConnection!
+}
+
+type ProductCardConnection {
+  edges: [ProductCardEdge!]!
+  pageInfo: PageInfo!
+}
+
+type ProductCardEdge {
+  node: ProductCard!
+  cursor: String!
+}
+
+interface ProductCard @key(fields: "id") {
+  id: ID!
+}
+
+type FeaturedProductCard implements ProductCard @key(fields: "id") {
+  id: ID!
+}
+
+type RelatedProductCard implements ProductCard @key(fields: "id") {
+  id: ID!
+}
+
+type RecommendedProductCard implements ProductCard @key(fields: "id") {
+  id: ID!
+}
+
+type PageInfo {
+  hasNextPage: Boolean!
+  hasPreviousPage: Boolean!
+  startCursor: String!
+  endCursor: String!
+}

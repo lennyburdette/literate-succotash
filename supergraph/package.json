@@ -1,0 +1,19 @@
+{
+  "name": "blockbuilder",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "type": "module",
+  "dependencies": {
+    "@apollo/server": "^4.7.0",
+    "@apollo/subgraph": "^2.4.2",
+    "graphql": "^16.6.0",
+    "nodemon": "^2.0.22"
+  },
+  "scripts": {
+    "subgraphs": "yarn nodemon subgraphs.js -e graphql,js",
+    "rover:e": "rover dev --name experience --schema experience.graphql --url http://localhost:4001/ --router-config router.yaml",
+    "rover:l": "rover dev --name listing --schema listing.graphql --url http://localhost:4002/ --router-config router.yaml",
+    "rover:d": "rover dev --name data --schema data.graphql --url http://localhost:4003/ --router-config router.yaml"
+  }
+}
