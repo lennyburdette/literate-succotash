@@ -121,6 +121,27 @@ const PRODUCTS = {
     imageUrl: "https://picsum.photos/200/300",
     price: { value: 300, currency: "USD" },
   },
+  "product:4": {
+    id: "product:4",
+    name: "Product 4",
+    description: "Product 4 description",
+    imageUrl: "https://picsum.photos/200/300",
+    price: { value: 400, currency: "USD" },
+  },
+  "product:5": {
+    id: "product:5",
+    name: "Product 5",
+    description: "Product 5 description",
+    imageUrl: "https://picsum.photos/200/300",
+    price: { value: 500, currency: "USD" },
+  },
+  "product:6": {
+    id: "product:6",
+    name: "Product 6",
+    description: "Product 6 description",
+    imageUrl: "https://picsum.photos/200/300",
+    price: { value: 600, currency: "USD" },
+  },
 };
 
 const { url } = await startStandaloneServer(server, { listen: { port: 4003 } });
