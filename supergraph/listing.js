@@ -10,38 +10,78 @@ const server = new ApolloServer({
 
     resolvers: {
       ProductCategoryCollection: {
-        products({ categoryId }) {
-          return {
-            edges: [
-              {
-                node: {
-                  __typename: "FeaturedProductCard",
-                  id: "product:1",
+        products({ categoryId, template }) {
+          if (categoryId === "category:1") {
+            return {
+              edges: [
+                {
+                  node: {
+                    id: "product:1",
+                  },
+                  template,
+                  kind: "FEATURED",
+                  cursor: "product:1",
                 },
-                cursor: "product:1",
-              },
-              {
-                node: {
-                  __typename: "FeaturedProductCard",
-                  id: "product:2",
+                {
+                  node: {
+                    id: "product:2",
+                  },
+                  template,
+                  kind: "FEATURED",
+                  cursor: "product:2",
                 },
-                cursor: "product:2",
-              },
-              {
-                node: {
-                  __typename: "FeaturedProductCard",
-                  id: "product:3",
+                {
+                  node: {
+                    id: "product:3",
+                  },
+                  template,
+                  kind: "FEATURED",
+                  cursor: "product:3",
                 },
-                cursor: "product:3",
+              ],
+              pageInfo: {
+                hasNextPage: false,
+                hasPreviousPage: false,
+                startCursor: "product:1",
+                endCursor: "product:3",
               },
-            ],
-            pageInfo: {
-              hasNextPage: false,
-              hasPreviousPage: false,
-              startCursor: "product:1",
-              endCursor: "product:3",
-            },
-          };
+            };
+          } else {
+            return {
+              edges: [
+                {
+                  node: {
+                    id: "product:3",
+                  },
+                  template,
+                  kind: "FEATURED",
+                  cursor: "product:3",
+                },
+                {
+                  node: {
+                    id: "product:5",
+                  },
+                  template,
+                  kind: "FEATURED",
+                  cursor: "product:5",
+                },
+                {
+                  node: {
+                    id: "product:6",
+                  },
+                  template,
+                  kind: "FEATURED",
+                  cursor: "product:6",
+                },
+              ],
+              pageInfo: {
+                hasNextPage: false,
+                hasPreviousPage: false,
+                startCursor: "product:4",
+                endCursor: "product:6",
+              },
+            };
+          }
         },
       },
     },

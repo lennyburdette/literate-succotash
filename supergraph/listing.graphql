@@ -1,34 +1,38 @@
 extend schema
-  @link(url: "https://specs.apollo.dev/federation/v2.3", import: ["@key"])
+  @link(
+    url: "https://specs.apollo.dev/federation/v2.3"
+    import: ["@key", "@shareable"]
+  )
 
-type ProductCategoryCollection @key(fields: "categoryId") {
+type ProductCategoryCollection @key(fields: "categoryId template { id }") {
   categoryId: ID!
-  products(first: Int = 10, after: String): ProductCardConnection!
+  template: Template!
+  products(first: Int = 10, after: String): ProductConnection!
 }
 
-type ProductCardConnection {
-  edges: [ProductCardEdge!]!
+type Template @shareable {
+  id: ID!
+}
+
+type ProductConnection {
+  edges: [ProductEdge!]!
   pageInfo: PageInfo!
 }
 
-type ProductCardEdge {
-  node: ProductCard!
+type ProductEdge @key(fields: "node { id } template { id }") {
+  node: Product!
+  template: Template
+  kind: ProductEdgeKind!
   cursor: String!
 }
 
-interface ProductCard @key(fields: "id") {
-  id: ID!
+enum ProductEdgeKind {
+  FEATURED
+  RELATED
+  RECOMMENDED
 }
 
-type FeaturedProductCard implements ProductCard @key(fields: "id") {
-  id: ID!
-}
-
-type RelatedProductCard implements ProductCard @key(fields: "id") {
-  id: ID!
-}
-
-type RecommendedProductCard implements ProductCard @key(fields: "id") {
+type Product @key(fields: "id") {
   id: ID!
 }
 

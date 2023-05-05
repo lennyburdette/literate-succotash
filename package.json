@@ -3,5 +3,14 @@
   "workspaces": [
     "supergraph",
     "vite-project"
-  ]
+  ],
+  "dependencies": {
+    "concurrently": "^8.0.1"
+  },
+  "scripts": {
+    "start": "yarn workspace supergraph rover:e",
+    "server": "concurrently \"yarn workspace supergraph rover:l\" \"yarn workspace supergraph rover:d\" \"yarn workspace supergraph subgraphs\"",
+    "compose": "rover supergraph compose --config supergraph/supergraph.yaml > supergraph/supergraph.graphql",
+    "compose:watch": "yarn nodemon -e yaml,graphql --ignore supergraph/supergraph.graphql --exec \"yarn compose\""
+  }
 }

@@ -1,3 +1,21 @@
 # yaml-language-server: $schema=router.config.json
+supergraph:
+  listen: 127.0.0.1:3000
 cors:
   allow_any_origin: true
+coprocessor:
+  url: http://localhost:4999/
+  router:
+    request:
+      sdl: true
+      context: true
+  subgraph:
+    all:
+      request:
+        body: true
+        context: true
+        service_name: true
+      response:
+        body: true
+        context: true
+        service_name: true

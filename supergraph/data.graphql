@@ -1,5 +1,23 @@
 extend schema
-  @link(url: "https://specs.apollo.dev/federation/v2.3", import: ["@key"])
+  @link(
+    url: "https://specs.apollo.dev/federation/v2.3"
+    import: ["@key", "@shareable", "@composeDirective"]
+  )
+  @link(url: "https://specs.example.org/contact/v0.1", import: ["@contact"])
+  @composeDirective(name: "@contact")
+  @contact(
+    name: "Team B"
+    url: "https://www.example.org"
+    description: "**beans**"
+    subgraph: "data"
+  )
+
+directive @contact(
+  name: String!
+  url: String!
+  description: String!
+  subgraph: String!
+) repeatable on SCHEMA
 
 type Product @key(fields: "id") {
   id: ID!
@@ -9,7 +27,7 @@ type Product @key(fields: "id") {
   price: Money
 }
 
-type Money {
+type Money @shareable {
   value: Int
   currency: String
 }

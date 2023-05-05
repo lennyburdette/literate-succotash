@@ -1,8 +1,40 @@
 extend schema
   @link(
     url: "https://specs.apollo.dev/federation/v2.3"
-    import: ["@key", "@interfaceObject"]
+    import: [
+      "@key"
+      "@interfaceObject"
+      "@composeDirective"
+      "@inaccessible"
+      "@requires"
+      "@external"
+      "@shareable"
+    ]
   )
+  @link(
+    url: "https://specs.apollo.dev/context/v0.1"
+    import: ["@setContext", "@fromContext"]
+  )
+  @link(url: "https://specs.example.org/contact/v0.1", import: ["@contact"])
+  @composeDirective(name: "@setContext")
+  @composeDirective(name: "@fromContext")
+  @composeDirective(name: "@contact")
+  @contact(
+    name: "Team A"
+    url: "https://www.example.org"
+    description: "**cool**"
+    subgraph: "experience"
+  )
+
+directive @setContext(name: String!, from: String!) on OBJECT
+directive @fromContext(name: String!) on FIELD_DEFINITION
+
+directive @contact(
+  name: String!
+  url: String!
+  description: String!
+  subgraph: String!
+) repeatable on SCHEMA
 
 type Query {
   page(url: String!): [PageBlock!]!
@@ -10,13 +42,21 @@ type Query {
 
 union PageBlock = ProductCategoryCollection
 
-type ProductCategoryCollection @key(fields: "categoryId") {
+type ProductCategoryCollection
+  @key(fields: "categoryId template { id }")
+  @setContext(name: "template", from: "template { id }") {
   categoryId: ID!
+  template: Template! @inaccessible
 }
 
-type ProductCard @interfaceObject @key(fields: "id") {
+type Template {
   id: ID!
-  blocks: [ProductCardBlock!]!
+}
+
+type ProductEdge @key(fields: "node { id } template { id }") {
+  node: Product!
+  template: Template @inaccessible
+  blocks: [ProductCardBlock!]! @fromContext(name: "template")
 }
 
 union ProductCardBlock =
@@ -25,22 +65,36 @@ union ProductCardBlock =
   | ProductCardImage
   | ProductCardPrice
 
-type ProductCardTitle {
+type ProductCardTitle @key(fields: "product { id }") {
   product: Product
+  title: String @requires(fields: "product { name }")
 }
 
-type ProductCardDescription {
+type ProductCardDescription @key(fields: "product { id }") {
   product: Product
+  description: String @requires(fields: "product { description }")
 }
 
-type ProductCardImage {
+type ProductCardImage @key(fields: "product { id }") {
   product: Product
+  imageUrl: String @requires(fields: "product { imageUrl }")
 }
 
-type ProductCardPrice {
+type ProductCardPrice @key(fields: "product { id }") {
   product: Product
+  priceFormatted: String
+    @requires(fields: "product { price { value currency } }")
 }
 
 type Product @key(fields: "id") {
   id: ID!
+  name: String @external
+  description: String @external
+  imageUrl: String @external
+  price: Money @external
+}
+
+type Money @shareable {
+  value: Int
+  currency: String
 }

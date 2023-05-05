@@ -1,0 +1,176 @@
+schema
+  @link(url: "https://specs.apollo.dev/link/v1.0")
+  @link(url: "https://specs.apollo.dev/join/v0.3", for: EXECUTION)
+  @link(url: "https://specs.apollo.dev/inaccessible/v0.2", for: SECURITY)
+  @link(url: "https://specs.example.org/contact/v0.1", import: ["@contact"])
+  @link(url: "https://specs.apollo.dev/context/v0.1", import: ["@setContext", "@fromContext"])
+  @contact(name: "Team B", url: "https://www.example.org", description: "**beans**", subgraph: "data")
+  @contact(name: "Team A", url: "https://www.example.org", description: "**cool**", subgraph: "experience")
+{
+  query: Query
+}
+
+directive @contact(name: String!, url: String!, description: String!, subgraph: String!) repeatable on SCHEMA
+
+directive @fromContext(name: String!) on FIELD_DEFINITION
+
+directive @inaccessible on FIELD_DEFINITION | OBJECT | INTERFACE | UNION | ARGUMENT_DEFINITION | SCALAR | ENUM | ENUM_VALUE | INPUT_OBJECT | INPUT_FIELD_DEFINITION
+
+directive @join__enumValue(graph: join__Graph!) repeatable on ENUM_VALUE
+
+directive @join__field(graph: join__Graph, requires: join__FieldSet, provides: join__FieldSet, type: String, external: Boolean, override: String, usedOverridden: Boolean) repeatable on FIELD_DEFINITION | INPUT_FIELD_DEFINITION
+
+directive @join__graph(name: String!, url: String!) on ENUM_VALUE
+
+directive @join__implements(graph: join__Graph!, interface: String!) repeatable on OBJECT | INTERFACE
+
+directive @join__type(graph: join__Graph!, key: join__FieldSet, extension: Boolean! = false, resolvable: Boolean! = true, isInterfaceObject: Boolean! = false) repeatable on OBJECT | INTERFACE | UNION | ENUM | INPUT_OBJECT | SCALAR
+
+directive @join__unionMember(graph: join__Graph!, member: String!) repeatable on UNION
+
+directive @link(url: String, as: String, for: link__Purpose, import: [link__Import]) repeatable on SCHEMA
+
+directive @setContext(name: String!, from: String!) on OBJECT
+
+scalar join__FieldSet
+
+enum join__Graph {
+  DATA @join__graph(name: "data", url: "http://localhost:4003/")
+  EXPERIENCE @join__graph(name: "experience", url: "http://localhost:4001/")
+  LISTING @join__graph(name: "listing", url: "http://localhost:4002/")
+}
+
+scalar link__Import
+
+enum link__Purpose {
+  """
+  `SECURITY` features provide metadata necessary to securely resolve fields.
+  """
+  SECURITY
+
+  """
+  `EXECUTION` features provide metadata necessary for operation execution.
+  """
+  EXECUTION
+}
+
+type Money
+  @join__type(graph: DATA)
+  @join__type(graph: EXPERIENCE)
+{
+  value: Int
+  currency: String
+}
+
+union PageBlock
+  @join__type(graph: EXPERIENCE)
+  @join__unionMember(graph: EXPERIENCE, member: "ProductCategoryCollection")
+ = ProductCategoryCollection
+
+type PageInfo
+  @join__type(graph: LISTING)
+{
+  hasNextPage: Boolean!
+  hasPreviousPage: Boolean!
+  startCursor: String!
+  endCursor: String!
+}
+
+type Product
+  @join__type(graph: DATA, key: "id")
+  @join__type(graph: EXPERIENCE, key: "id")
+  @join__type(graph: LISTING, key: "id")
+{
+  id: ID!
+  name: String @join__field(graph: DATA) @join__field(graph: EXPERIENCE, external: true)
+  description: String @join__field(graph: DATA) @join__field(graph: EXPERIENCE, external: true)
+  imageUrl: String @join__field(graph: DATA) @join__field(graph: EXPERIENCE, external: true)
+  price: Money @join__field(graph: DATA) @join__field(graph: EXPERIENCE, external: true)
+}
+
+union ProductCardBlock
+  @join__type(graph: EXPERIENCE)
+  @join__unionMember(graph: EXPERIENCE, member: "ProductCardTitle")
+  @join__unionMember(graph: EXPERIENCE, member: "ProductCardDescription")
+  @join__unionMember(graph: EXPERIENCE, member: "ProductCardImage")
+  @join__unionMember(graph: EXPERIENCE, member: "ProductCardPrice")
+ = ProductCardTitle | ProductCardDescription | ProductCardImage | ProductCardPrice
+
+type ProductCardDescription
+  @join__type(graph: EXPERIENCE, key: "product { id }")
+{
+  product: Product
+  description: String @join__field(graph: EXPERIENCE, requires: "product { description }")
+}
+
+type ProductCardImage
+  @join__type(graph: EXPERIENCE, key: "product { id }")
+{
+  product: Product
+  imageUrl: String @join__field(graph: EXPERIENCE, requires: "product { imageUrl }")
+}
+
+type ProductCardPrice
+  @join__type(graph: EXPERIENCE, key: "product { id }")
+{
+  product: Product
+  priceFormatted: String @join__field(graph: EXPERIENCE, requires: "product { price { value currency } }")
+}
+
+type ProductCardTitle
+  @join__type(graph: EXPERIENCE, key: "product { id }")
+{
+  product: Product
+  title: String @join__field(graph: EXPERIENCE, requires: "product { name }")
+}
+
+type ProductCategoryCollection
+  @join__type(graph: EXPERIENCE, key: "categoryId template { id }")
+  @join__type(graph: LISTING, key: "categoryId template { id }")
+  @setContext(name: "template", from: "template { id }")
+{
+  categoryId: ID!
+  template: Template! @inaccessible
+  products(first: Int = 10, after: String): ProductConnection! @join__field(graph: LISTING)
+}
+
+type ProductConnection
+  @join__type(graph: LISTING)
+{
+  edges: [ProductEdge!]!
+  pageInfo: PageInfo!
+}
+
+type ProductEdge
+  @join__type(graph: EXPERIENCE, key: "node { id } template { id }")
+  @join__type(graph: LISTING, key: "node { id } template { id }")
+{
+  node: Product!
+  template: Template @inaccessible
+  blocks: [ProductCardBlock!]! @join__field(graph: EXPERIENCE) @fromContext(name: "template")
+  kind: ProductEdgeKind! @join__field(graph: LISTING)
+  cursor: String! @join__field(graph: LISTING)
+}
+
+enum ProductEdgeKind
+  @join__type(graph: LISTING)
+{
+  FEATURED @join__enumValue(graph: LISTING)
+  RELATED @join__enumValue(graph: LISTING)
+  RECOMMENDED @join__enumValue(graph: LISTING)
+}
+
+type Query
+  @join__type(graph: DATA)
+  @join__type(graph: EXPERIENCE)
+  @join__type(graph: LISTING)
+{
+  page(url: String!): [PageBlock!]! @join__field(graph: EXPERIENCE)
+}
+
+type Template
+  @join__type(graph: EXPERIENCE)
+  @join__type(graph: LISTING)
+{
+  id: ID!
+}
