@@ -1,23 +1,26 @@
 extend schema
   @link(
     url: "https://specs.apollo.dev/federation/v2.3"
-    import: ["@key", "@shareable", "@composeDirective"]
-  )
-  @link(url: "https://specs.example.org/contact/v0.1", import: ["@contact"])
-  @composeDirective(name: "@contact")
-  @contact(
-    name: "Team B"
-    url: "https://www.example.org"
-    description: "**beans**"
-    subgraph: "data"
+    import: ["@key", "@shareable"]
   )
 
-directive @contact(
-  name: String!
-  url: String!
-  description: String!
-  subgraph: String!
-) repeatable on SCHEMA
+### DATA CONCERNS ##############################################################
+
+type ProductCategory {
+  id: ID!
+  products(first: Int = 10, after: String): ProductConnection!
+}
+
+type ProductConnection {
+  edges: [ProductEdge!]!
+  pageInfo: PageInfo!
+}
+
+type ProductEdge {
+  node: Product!
+  kind: ProductEdgeKind!
+  cursor: String!
+}
 
 type Product @key(fields: "id") {
   id: ID!
@@ -27,7 +30,39 @@ type Product @key(fields: "id") {
   price: Money
 }
 
+enum ProductEdgeKind {
+  FEATURED
+  RELATED
+  RECOMMENDED
+}
+
+type PageInfo @shareable {
+  hasNextPage: Boolean!
+  hasPreviousPage: Boolean!
+  startCursor: String!
+  endCursor: String!
+}
+
 type Money @shareable {
   value: Int
   currency: String
 }
+
+################################################################################
+
+### PRESENTATIONAL CONCERNS ####################################################
+
+# !!! We wish we didn't have to thread this through the graph !!!
+extend type ProductCategory @key(fields: "id template { id }") {
+  template: Template
+}
+
+extend type ProductEdge @key(fields: "node { id } template { id }") {
+  template: Template
+}
+
+type Template @shareable {
+  id: ID!
+}
+
+################################################################################

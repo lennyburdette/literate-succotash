@@ -9,9 +9,9 @@ const server = new ApolloServer({
     typeDefs: parse(readFileSync("listing.graphql", "utf-8")),
 
     resolvers: {
-      ProductCategoryCollection: {
-        products({ categoryId, template }) {
-          if (categoryId === "category:1") {
+      ProductCategory: {
+        products({ id, template }) {
+          if (id === "category:1") {
             return {
               edges: [
                 {

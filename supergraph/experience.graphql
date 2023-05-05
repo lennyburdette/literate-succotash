@@ -1,63 +1,33 @@
 extend schema
   @link(
     url: "https://specs.apollo.dev/federation/v2.3"
-    import: [
-      "@key"
-      "@interfaceObject"
-      "@composeDirective"
-      "@inaccessible"
-      "@requires"
-      "@external"
-      "@shareable"
-    ]
+    import: ["@key", "@inaccessible", "@requires", "@external", "@shareable"]
   )
-  @link(
-    url: "https://specs.apollo.dev/context/v0.1"
-    import: ["@setContext", "@fromContext"]
-  )
-  @link(url: "https://specs.example.org/contact/v0.1", import: ["@contact"])
-  @composeDirective(name: "@setContext")
-  @composeDirective(name: "@fromContext")
-  @composeDirective(name: "@contact")
-  @contact(
-    name: "Team A"
-    url: "https://www.example.org"
-    description: "**cool**"
-    subgraph: "experience"
-  )
-
-directive @setContext(name: String!, from: String!) on OBJECT
-directive @fromContext(name: String!) on FIELD_DEFINITION
-
-directive @contact(
-  name: String!
-  url: String!
-  description: String!
-  subgraph: String!
-) repeatable on SCHEMA
 
 type Query {
   page(url: String!): [PageBlock!]!
 }
 
-union PageBlock = ProductCategoryCollection
+### PAGE BLOCKS ################################################################
 
-type ProductCategoryCollection
-  @key(fields: "categoryId template { id }")
-  @setContext(name: "template", from: "template { id }") {
-  categoryId: ID!
+union PageBlock = ProductCategoryBlock
+
+type ProductCategoryBlock @key(fields: "category { id } template { id }") {
+  category: ProductCategory!
   template: Template! @inaccessible
 }
 
-type Template {
+"""
+We need this presentational to propagate through the tree, but it's strictly a
+presentational concern, so we don't want it to leak into data subgraphs.
+"""
+type Template @inaccessible {
   id: ID!
 }
 
-type ProductEdge @key(fields: "node { id } template { id }") {
-  node: Product!
-  template: Template @inaccessible
-  blocks: [ProductCardBlock!]! @fromContext(name: "template")
-}
+################################################################################
+
+### COMPONENT BLOCKS ###########################################################
 
 union ProductCardBlock =
     ProductCardTitle
@@ -86,6 +56,21 @@ type ProductCardPrice @key(fields: "product { id }") {
     @requires(fields: "product { price { value currency } }")
 }
 
+################################################################################
+
+### DATA CONCERNS ##############################################################
+
+type ProductCategory @key(fields: "id template { id }") {
+  id: ID!
+  template: Template @inaccessible
+}
+
+type ProductEdge @key(fields: "node { id } template { id }") {
+  node: Product!
+  template: Template @inaccessible
+  blocks: [ProductCardBlock!]!
+}
+
 type Product @key(fields: "id") {
   id: ID!
   name: String @external
@@ -98,3 +83,5 @@ type Money @shareable {
   value: Int
   currency: String
 }
+
+################################################################################

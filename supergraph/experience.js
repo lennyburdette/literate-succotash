@@ -21,13 +21,13 @@ const server = new ApolloServer({
         page(_, { url }) {
           return [
             {
-              __typename: "ProductCategoryCollection",
-              categoryId: "category:1",
+              __typename: "ProductCategoryBlock",
+              category: { id: "category:1", template: { id: "template:1" } },
               template: { id: "template:1" },
             },
             {
-              __typename: "ProductCategoryCollection",
-              categoryId: "category:2",
+              __typename: "ProductCategoryBlock",
+              category: { id: "category:2", template: { id: "template:2" } },
               template: { id: "template:2" },
             },
           ];

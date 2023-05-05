@@ -4,9 +4,13 @@ extend schema
     import: ["@key", "@shareable"]
   )
 
-type ProductCategoryCollection @key(fields: "categoryId template { id }") {
-  categoryId: ID!
-  template: Template!
+type ProductCategory @key(fields: "id template { id }") {
+  id: ID!
+
+  """
+  We wish we didn't have to thread this through the graph.
+  """
+  template: Template
   products(first: Int = 10, after: String): ProductConnection!
 }
 
@@ -21,6 +25,10 @@ type ProductConnection {
 
 type ProductEdge @key(fields: "node { id } template { id }") {
   node: Product!
+
+  """
+  We wish we didn't have to thread this through the graph.
+  """
   template: Template
   kind: ProductEdgeKind!
   cursor: String!
@@ -36,7 +44,7 @@ type Product @key(fields: "id") {
   id: ID!
 }
 
-type PageInfo {
+type PageInfo @shareable {
   hasNextPage: Boolean!
   hasPreviousPage: Boolean!
   startCursor: String!
