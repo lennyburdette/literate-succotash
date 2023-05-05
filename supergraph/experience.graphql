@@ -18,8 +18,8 @@ type ProductCategoryBlock @key(fields: "category { id } template { id }") {
 }
 
 """
-We need this presentational to propagate through the tree, but it's strictly a
-presentational concern, so we don't want it to leak into data subgraphs.
+We need this presentational context to propagate through the tree, but as it's
+strictly a presentational concern we don't want it to leak into data subgraphs.
 """
 type Template @inaccessible {
   id: ID!
